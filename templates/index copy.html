@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Scanner</title>
+    <style>
+        /* [Existing CSS styles remain unchanged] */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        input[type="text"] {
+            width: 300px;
+            padding: 10px;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            white-space: pre-wrap;
+            /* Preserve whitespace and line breaks */
+            max-height: 500px;
+            overflow-y: auto;
+            font-size: 15px;
+        }
+
+        /* Spinner Styles */
+        .spinner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .spinner div {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Web Scanner</h1>
+    <form id="toolForm" method="POST">
+        <input type="text" name="url" id="url" placeholder="Enter URL (e.g., example.com)" required>
+        <button type="button" onclick="runTool('sslscan')">SSLScan</button>
+        <button type="button" onclick="runMhuntScan()">Directory Scan</button>
+    </form>
+    <div id="loading" class="spinner" style="display: none;">
+        <div></div>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        function runTool(tool) {
+            const url = document.getElementById('url').value.trim();
+            const loadingElement = document.getElementById('loading');
+            const resultElement = document.getElementById('result');
+
+            // Input Validation
+            if (!url) {
+                alert("Please enter a URL.");
+                return;
+            }
+
+            if (tool === 'sslscan') {
+                // Show spinner
+                loadingElement.style.display = 'flex';
+                resultElement.innerHTML = '';
+
+                fetch(`/${tool}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({ url: url })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Hide spinner
+                        loadingElement.style.display = 'none';
+
+                        if (data.error) {
+                            resultElement.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+                        } else {
+                            const formattedResult = data.result.replace(/<br>/g, '\n');
+                            resultElement.innerHTML = `<pre>${formattedResult}</pre>`;
+                        }
+                    })
+                    .catch(error => {
+                        // Hide spinner
+                        loadingElement.style.display = 'none';
+                        resultElement.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                    });
+            }
+        }
+
+        function runMhuntScan() {
+            const url = document.getElementById('url').value.trim();
+            const loadingElement = document.getElementById('loading');
+            const resultElement = document.getElementById('result');
+
+            // Input Validation
+            if (!url) {
+                alert("Please enter a URL.");
+                return;
+            }
+
+            // Show spinner
+            loadingElement.style.display = 'flex';
+            resultElement.innerHTML = '';
+
+            // Initialize EventSource
+            const eventSource = new EventSource(`/mhunt?url=${encodeURIComponent(url)}`);
+
+            eventSource.onmessage = function (event) {
+                if (event.data.startsWith("Error:") || event.data.startsWith("Exception occurred:")) {
+                    resultElement.innerHTML += `<p style="color: red;">${event.data}</p>`;
+                    loadingElement.style.display = 'none';
+                    eventSource.close();
+                } else {
+                    resultElement.innerHTML += `<pre>${event.data}</pre>`;
+                }
+            };
+
+            eventSource.onerror = function () {
+                resultElement.innerHTML += `<p style="color: red;">An error occurred while processing the scan.</p>`;
+                loadingElement.style.display = 'none';
+                eventSource.close();
+            };
+
+            eventSource.onopen = function () {
+                console.log("Connection to server opened.");
+            };
+        }
+    </script>
+</body>
+
+</html>
