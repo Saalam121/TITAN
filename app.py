@@ -42,10 +42,10 @@ def mhunt_scan():
         return jsonify({"error": "URL is required"}), 400
 
     wordlist_path = "./resources/fuzz2.txt"
-    threads = 40
+    threads = 88
 
     command = [
-        "feroxbuster",
+        "./resources/feroxbuster",
         "-u",
         url,
         "-w",
