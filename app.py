@@ -17,6 +17,8 @@ def scan():
     url = request.form.get("url")
     if not url:
         return jsonify({"error": "URL is required"}), 400
+    
+    # print("Hello")
 
     try:
         result = subprocess.run(
@@ -25,9 +27,13 @@ def scan():
         output = result.stdout
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+    # print("Here")
 
     formatted_output = format_output(output)
+    print("done", formatted_output)
     return jsonify({"result": formatted_output})
+
 
 
 def format_output(output):
