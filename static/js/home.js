@@ -1,9 +1,9 @@
 resultElement.style.fontFamily = "'Poppins', sans-serif";
 
-function runTool(tool) {
+function sendMessage(event) {
+    event.preventDefault();
     const url = document.getElementById('url').value.trim();
-    const loadingElement = document.getElementById('loading');
-    const resultElement = document.getElementById('result');
+    const chatContainer = document.getElementById('chatContainer');
 
     // Input Validation
     if (!url) {
@@ -11,43 +11,62 @@ function runTool(tool) {
         return;
     }
 
-    if (tool === 'sslscan') {
-        // Show spinner
-        loadingElement.style.display = 'flex';
-        resultElement.innerHTML = '';  // Clear previous result
+    // Append your message (query) to the left
+    const yourMessage = document.createElement('div');
+    yourMessage.classList.add('chat-message', 'left');
+    yourMessage.textContent = `Query: ${url}`;
+    chatContainer.appendChild(yourMessage);
 
-        // Fetch data from the server
-        fetch(`/${tool}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({ url: url })
-        })
-            .then(response => response.json())
-            .then(data => {
-                // Hide spinner
-                loadingElement.style.display = 'none';
-
-                if (data.error) {
-                    resultElement.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
-                    smoothExpand(resultElement); // Trigger smooth expansion
-                } else {
-                    const formattedResult = data.result.replace(/<br>/g, '\n');
-                    resultElement.style.display = 'block';
-                    resultElement.style.fontFamily = "Poppins";
-                    resultElement.innerHTML = `<pre>${formattedResult}</pre>`;
-                    smoothExpand(resultElement); // Trigger smooth expansion
-                }
-            })
-            .catch(error => {
-                // Hide spinner
-                loadingElement.style.display = 'none';
-                resultElement.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
-                smoothExpand(resultElement); // Trigger smooth expansion
-            });
-    }
+    // Scroll to bottom to show latest messages
+    chatContainer.scrollTop = chatContainer.scrollHeight;
 }
+
+function runTool(tool) {
+    const url = document.getElementById('url').value.trim();
+    const loadingElement = document.getElementById('loading');
+    const chatContainer = document.getElementById('chatContainer');
+
+    // Append message for the scan request
+    const scanRequestMessage = document.createElement('div');
+    scanRequestMessage.classList.add('chat-message', 'left');
+    scanRequestMessage.textContent = `Running scan for: ${url}`;
+    chatContainer.appendChild(scanRequestMessage);
+
+    // Show the spinner
+    loadingElement.style.display = 'flex';
+
+    fetch(`/${tool}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ url: url })
+    })
+    .then(response => response.json())
+    .then(data => {
+        loadingElement.style.display = 'none';
+
+        // Append scan result message (right side)
+        const resultMessage = document.createElement('div');
+        resultMessage.classList.add('chat-message', 'right');
+        if (data.error) {
+            resultMessage.textContent = `Error: ${data.error}`;
+        } else {
+            resultMessage.textContent = `Result: ${data.result}`;
+        }
+        chatContainer.appendChild(resultMessage);
+        
+        // Scroll to bottom to show latest messages
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    })
+    .catch(error => {
+        loadingElement.style.display = 'none';
+        const errorMessage = document.createElement('div');
+        errorMessage.classList.add('chat-message', 'right');
+        errorMessage.textContent = `Error: ${error.message}`;
+        chatContainer.appendChild(errorMessage);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    });
+}
+
 
 // Function to smoothly expand the result div based on its content
 function smoothExpand(resultElement) {

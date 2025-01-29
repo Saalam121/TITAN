@@ -43,6 +43,7 @@ button {
     margin-right: 5px;
     cursor: pointer;
     border: none;
+    outline: none;
     border-radius: 50px;
 
     transition: 0.1s background-color linear;
@@ -53,36 +54,47 @@ button:hover {
     color: white;
 }
 
-button:focus {
-    opacity: 0.7;
-    border: none;
-    outline: none;
-}
-
 #result, #result pre {
     font-family: "Poppins", sans-serif !important;
 }
 
-#result {
-    margin-top: 20px;
-    padding: 10px;
-
-    display: none;
-
-    border: none;
-    border-radius: 10px;
-
-    background-color: #ffffff31;
-    color: white;
-    white-space: pre-wrap;
-    /* Preserve whitespace and line breaks */
-    max-height: 500px;
+/* Container for chat-like interaction */
+#chatContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: 80vw;
+    max-width: 800px;
+    margin: 20px auto;
+    height: 500px;
     overflow-y: auto;
-    font-size: 15px;
+    padding: 10px;
+}
 
-    transition: 2s width;
-    width: 100px;
-    
+/* Style for both your message and output messages */
+.chat-message {
+    max-width: 60%;
+    padding: 10px 15px;
+    margin: 5px;
+    border-radius: 15px;
+    font-family: "Poppins", sans-serif;
+    font-size: 15px;
+    white-space: pre-wrap;
+}
+
+/* Your message (query) aligned to the left */
+.chat-message.left {
+    background-color: #4caf50;
+    color: white;
+    align-self: flex-start;
+}
+
+/* Scan result message aligned to the right */
+.chat-message.right {
+    background-color: #3498db;
+    color: white;
+    align-self: flex-end;
 }
 
 /* Spinner Styles */

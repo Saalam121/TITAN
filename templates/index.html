@@ -13,16 +13,17 @@
 
 <body>
     <h1>Web Scanner</h1>
-    <form id="toolForm" method="POST">
+    <div id="chatContainer">
+        <!-- Chat content will be dynamically added here -->
+    </div>
+    <form id="toolForm" method="POST" onsubmit="sendMessage(event)">
         <input type="text" class="input-web-url" name="url" id="url" placeholder="Enter URL (e.g., example.com)" required>
         <button type="button" onclick="runTool('sslscan')">SSLScan</button>
         <button type="button" onclick="runMhuntScan()">Directory Scan</button>
         <button type="button" onclick="stopScan()" id="stopScan" style="display: none;">Stop Scan</button>
     </form>
-    <div id="loading" class="spinner" style="display: none; font-family: Poppins;">
-        <div></div>
-    </div>
-    <div id="result"></div>
+    <div id="loading" class="spinner" style="display: none;"></div>
 </body>
+
 
 </html>
